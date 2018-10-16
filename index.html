@@ -1,0 +1,245 @@
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+		<title>Mongoose intro</title>
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/reveal.css">
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/css/theme/black.css">
+
+		<!-- Theme used for syntax highlighting of code -->
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/lib/css/zenburn.css">
+
+		<!-- Printing and PDF exports -->
+		<script>
+			var link = document.createElement( 'link' );
+			link.rel = 'stylesheet';
+			link.type = 'text/css';
+			link.href = window.location.search.match( /print-pdf/gi ) ? 'css/print/pdf.css' : 'css/print/paper.css';
+			document.getElementsByTagName( 'head' )[0].appendChild( link );
+		</script>
+	</head>
+	<body>
+		<div class="reveal">
+			<div class="slides">
+        <section>
+          <section>
+            <h1>mongoose</h1>
+            <a href="https://mongoosejs.com/docs/index.html">Docs</a>
+          </section>
+          <section>
+            <h3>¿Qué es mongoose?</h3>
+            <p class="fragment fade-in">Es una librería de NodeJs que funciona como intermediario entre una base de datos MongoDB y un servidor</p>
+            <p class="fragment fade-in">Permite traducir los datos y las funciones de la base de datos a Objetos Relacionales</p>
+          </section>
+          <section>
+            <h4>¿Si ya existe la librería <code>mongodb</code> (la que utilizamos en el curso de MongoDB) para qué necesitamos mongoose?</h4>
+            <p class="fragment fade-in">mongoose funciona sobre la librería <code>mongodb</code> pero nos permite darle estructura, legibilidad, seguridad y acelerar la velocidad de desarrollo</p>
+          </section>
+          <section>
+            <h3>¿Para qué sirve mongoose?</h3>
+            <p class="fragment fade-in">Abstraer el uso de una base datos a un lenguaje orientado a objetos</p>
+            <p class="fragment fade-in">Facilitar el desarrollo, mantenimiento y evolución de la arquitectura de datos</p>
+            <p class="fragment fade-in">Automatizar el casteo y validación de datos</p>
+            <p class="fragment fade-in">Evitar vulnerabilidades durante ataques</p>
+          </section>
+        </section>
+        <section>
+          <section>
+            ¿Cómo se utiliza Mongoose?
+          </section>
+          <section>
+            <p>Mongoose es una librería de JS que se distribuye en los paquetes de NodeJs (npm)</p>
+            <p>Para instalarlo, aseguarse de tener NodeJs instalado, corriendo este comando en la Terminal de Comandos</p>
+            <pre><code> node --version </code></pre>
+            <p>Accesar a la carpeta donde se desarrolla el proyecto de Node e instalar</p>
+            <pre><code> npm install mongoose </code></pre>
+          </section>
+          <section>
+            <h2>Conexión a la base de datos</h2>
+            <p>Como cualquier paquete de node, hay que importarlo con el comando require</p>
+            <pre><code data-trim>
+              var mongoose = require('mongoose');
+              // Para conectarnos a la base de datos "mi-base-de-datos"
+              mongoose.connect('mongodb://localhost/mi-base-de-datos');
+            </code></pre>
+          </section>
+          <section>
+            <p>Para entender cómo usar la librería de Mongoose hay que entender estos dos conceptos</p>
+            <ol>
+              <li>Esquemas (Schemas)</li>
+              <li>Modelos (Models)</li>
+            </ol>
+          </section>
+          <section>
+            <h3>Schemas</h3>
+            <p>El esquema nos sirve para definir los campos, sus características y los tipos de datos de cada recurso que guardaremos en nuestra base de datos </p>
+            <p>Nos ayuda a hacer casts y validaciones para evitar incosistencias que puedan producir errores inesperados</p>
+          </section>
+          <section>
+            <p>Los esquemas se definen con objetos JSON que especifican, para cada campo, su tipo de dato (SchemaType)</p>
+            <ul>
+              <li>String</li>
+              <li>Number</li>
+              <li>Date</li>
+              <li>Boolean</li>
+              <li>Array</li>
+              <li>Object</li>
+              <li>ObjectId</li>
+              <li>Otros...</li>
+            </ul>
+          </section>
+          <section>
+              <pre><code data-trim contenteditable>
+                var mongoose = require('mongoose');
+                var Schema = mongoose.Schema;
+              
+                var blogSchema = new Schema({
+                  title:  { 
+                    type: String,
+                    required: true
+                  }
+                  author: String,
+                  body:   String,
+                  comments: [{ body: String, date: Date }],
+                  date: { type: Date, default: Date.now },
+                  hidden: Boolean,
+                  meta: {
+                    votes: Number,
+                    favs:  Number
+                  }
+                });              
+              </code></pre>
+          </section>
+          
+          <section>
+            <h3>Models</h3>
+            <p>A partir de un esquema podemos producir modelos, que son objetos constructores. Tienen los métodos con los cuales podremos accesar, modificar, insertar o borrar recursos en la base de datos</p>
+            <p>A partir de un modelo es posible instanciar un nuevo objeto, al que se le conoce como Documento</p>
+          </section>
+          <section>
+            <p>El constructor de Models de mongoose recibe 2 o 3 parametros</p>
+            <ol>
+              <li>Nombre del Modelo</li>
+              <li>Esquema</li>
+              <li>(opcional) Nombre de la colección en la base de datos</li>
+            </ol>
+            <pre><code data-trim contenteditable>
+                var Blog = mongoose.model('Blog', blogSchema); 
+                // collection => 'blogs'  
+            </code></pre>
+            <p style="font-size: 0.5em; padding: 0 20px;">
+              *En caso de no poner el tercer parámetro, por defecto, la colección a usar en la base de datos será el plural (en inglés) del nombre del modelo <br>
+              Ej. Country => countries
+            </p>
+          </section>
+          <section>
+            <p>Una ves teniendo el Modelo podemos accesar a la base de datos por medio de los métodos predefinidos </p>
+            <h5>find</h5>
+            <pre><code data-trim contenteditable>
+              var User = mongoose.model('User', userSchema)
+
+              User.find({name: 'Ralex'}, callback) // versión mas simple
+
+              // con encadenables opcionales
+              User.find
+              .select // recibe el nombre de los campos a mostrar (1/true) o no (0/false)
+              .where // parámetros de búsqueda
+              .limit // cuántos documentos a recibir
+              .sort // campos según ordenaran acendentemente (1) o descendentemente (0)
+              .skip // número de registros a ignorar. Excelente para paginadores
+              .exec(callback)
+              
+              //dentro de los callbacks, cada Documento tiene las funciones
+              // - save()  permite iterar y modificar los documentos de la base de datos
+              // - delete() permite borrar 
+            </code></pre>
+          </section>
+          <section>
+            <h5>Insert</h5>
+            <pre><code data-trim contenteditable>
+            // Insertar por medio de una instancia
+            var User = mongoose.model('User', userSchema)
+            let ralex = new User({name: 'Ralex', description: 'Cyber-hippie'})
+            ralex.save() // ejecuta la llamada a la base de datos para guardar el documento
+            </code></pre>
+            <pre><code data-trim contenteditable>
+            // Insertar por medio de una instancia
+            var User = mongoose.model('User', userSchema)
+            User.create({name: 'Ralex', description: 'Eco-hacker'}, function(err, res) {
+              if (err) console.log(err)
+              console.log(res)
+            })
+            </code></pre>
+          </section>
+          <section>
+              <p>Además de la escrucutra, los esquemas nos permiten definir métodos de instancia, métodos estáticos, índices, ayudadores para consultas e intermediarios para algunos métodos predefinidos</p>
+              <p>Quiero que Documento instancia del modelo Animal tengan un método para encontar otros animales de su mismo tipo</p>
+              <pre><code data-trim contenteditable>
+                animalSchema.methods.findSimilarTypes = function(cb) {
+                  return this.model('Animal').find({ type: this.type }, cb);
+                };
+                // ...
+                var dog = new Animal({ type: 'dog' });
+
+                dog.findSimilarTypes(function(err, dogs) {
+                  console.log(dogs); // woof
+                });
+              </code></pre>
+            </section>
+            <section>
+              <p>Quiero que  mi Modelo Animal tengan un método para encontar por nombre</p>
+              <pre><code data-trim contenteditable>
+                animalSchema.statics.findByName = function(name, cb) {
+                  return this.find({ name: new RegExp(name, 'i') }, cb);
+                };
+                var Animal = mongoose.model('Animal', animalSchema);
+                Animal.findByName('fido', function(err, animals) {
+                  console.log(animals);
+                });
+              </code></pre>
+            </section>
+            <section>              
+              <p>Para guardar el password de un usuario, no textual, sino hasehado </p>
+              <pre><code data-trim contenteditable>
+                let bcrypt = require('bcrypt')
+                ...
+                userSchema.pre('save', function (user) {
+                  user.password = bcrypt.hashSync(user.password)
+                })
+              </code></pre>
+            </section>
+        </section>
+        <section>
+          <h3>Gracias por su atención</h3>
+          <p>La presentación la pueden encontrar en</p>
+          <a href="https://ralexrdz.github.io/mongoose-intro">ralexrdz.github.io/mongoose-intro</a>
+          <p>El video con comentarios en </p>
+          <a href="https://ralexrdz.github.io/mongoose-intro">ralexrdz.github.io/mongoose-intro</a>
+          <p>Las tecnologías sobre las cuales fueron grabadas y realizadas la presentación</p>
+          <a href="https://github.com/ralexrdz/mongoose-intro">github.com/ralexrdz/mongoose-intro</a>
+        </section>
+      </div>
+    </div>
+
+		<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/lib/js/head.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/js/reveal.min.js"></script>
+
+		<script>
+			// More info about config & dependencies:
+			// - https://github.com/hakimel/reveal.js#configuration
+			// - https://github.com/hakimel/reveal.js#dependencies
+			Reveal.initialize({
+				transition: 'zoom',
+				dependencies: [
+					{ src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/plugin/markdown/marked.js' },
+					{ src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/plugin/markdown/markdown.js' },
+					{ src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/plugin/notes/notes.js', async: true },
+					{ src: 'https://cdn.jsdelivr.net/npm/reveal.js@3.7.0/plugin/highlight/highlight.js', async: true, callback: function() { hljs.initHighlightingOnLoad(); } }
+				]
+			});
+		</script>
+	</body>
+</html>
